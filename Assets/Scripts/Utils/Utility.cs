@@ -209,6 +209,35 @@ namespace SardineFish.Utils
             }
         }
 
+        /// <summary>
+        /// Generate coordinate sequence in the whole bounds.
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
+        public static IEnumerable<(int x, int y, int z)> IterTuple(this BoundsInt bounds)
+        {
+            for(var z = bounds.zMin; z < bounds.zMax; z++)
+            for(var y=bounds.yMin; y < bounds.yMax; y++)
+            for (var x = bounds.xMin; x < bounds.xMax; x++)
+            {
+                yield return (x, y, z);
+            }
+        }
+        /// <summary>
+        /// Generate coordinate sequence in the whole bounds.
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
+        public static IEnumerable<Vector3Int> Iter(this BoundsInt bounds)
+        {
+            for(var z = bounds.zMin; z < bounds.zMax; z++)
+            for(var y=bounds.yMin; y < bounds.yMax; y++)
+            for (var x = bounds.xMin; x < bounds.xMax; x++)
+            {
+                yield return new Vector3Int(x, y, z);
+            }
+        }
+
         #endregion Generator
 
         public static void ForEach<T>(this IEnumerable<T> ts, Action<T> callback)
