@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Reflection;
-using Prototype.Utils;
 using UnityEditor;
+using SardineFish.Utils;
 
 
-namespace Prototype.Editor
+namespace SardineFish.Utils.Editor
 {
     [CustomAttributeEditor(typeof(EditorButtonAttribute))]
     public class ButtonEditor : AttributeEditor

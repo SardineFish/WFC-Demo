@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Prototype.Utils
+namespace SardineFish.Utils
 {
     public static class ShaderPool
     {

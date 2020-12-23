@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Prototype.Utils
+namespace SardineFish.Utils
 {
     
     public class GameObjectPool : MonoBehaviour
