@@ -5,11 +5,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Prototype.Utils;
+using SardineFish.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace Prototype.Editor
+namespace SardineFish.Utils.Editor
 {
     [CustomAttributeEditor(typeof(DisplayInInspectorAttribute))]
     class DisplayInInspectorEditor : AttributeEditor

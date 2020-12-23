@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEditor;
 
-namespace Prototype.Editor
+namespace SardineFish.Utils.Editor
 {
     public static class EditorUtils
     {
