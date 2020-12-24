@@ -94,11 +94,14 @@ namespace SardineFish.Utils
             => new Vector2Int(v.x, v.y);
         public static Vector2Int ToVector2Int(this Vector2 v)
             => new Vector2Int(Mathf.FloorToInt(v.x), Mathf.FloorToInt(v.y));
-        public static Vector2Int RoundToVector2Int(Vector2 v)
+        public static Vector2Int RoundToVector2Int(this Vector2 v)
             => new Vector2Int(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y));
 
-        public static Vector3Int RoundToVector3Int(Vector3 v)
+        public static Vector3Int RoundToVector3Int(this Vector3 v)
             => new Vector3Int(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y), Mathf.RoundToInt(v.z));
+        
+        public static Vector3Int FloorToVector3Int(this Vector3 v)
+            => new Vector3Int(Mathf.FloorToInt(v.x), Mathf.FloorToInt(v.y), Mathf.FloorToInt(v.z));
     
         public static Vector3Int ToVector3Int(this Vector2 v, int z = 0)
             => new Vector3Int(Mathf.FloorToInt(v.x), Mathf.FloorToInt(v.y), z);
@@ -108,6 +111,7 @@ namespace SardineFish.Utils
             => new Vector2(v.x, v.y);
         public static Vector2Int ToVector2Int(this Vector3 v)
             => new Vector2Int(Mathf.FloorToInt(v.x), Mathf.FloorToInt(v.y));
+
         public static Vector2 Abs(Vector2 v) 
             => new Vector2(Mathf.Abs(v.x), Mathf.Abs(v.y));
 
@@ -174,6 +178,9 @@ namespace SardineFish.Utils
 
         public static float MaxOf(Vector2 v)
             => Mathf.Max(v.x, v.y);
+
+        public static Vector3Int Modulo(this Vector3Int v, int m)
+            => new Vector3Int(v.x % m, v.y % m, v.z % m);
 
         public static bool Contains(this RectInt rect, Vector2 pos)
         {
