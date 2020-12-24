@@ -43,6 +43,13 @@ namespace SardineFish.Utils
             return rect;
         }
 
+        public static BoundsInt Encapsulate(this BoundsInt bounds, Vector3Int pos)
+        {
+            var min = Vector3Int.Min(bounds.min, pos);
+            var max = Vector3Int.Max(bounds.max, pos + Vector3Int.one);
+            return new BoundsInt(min, max - min);
+        }
+
         public static float Frac(float x)
             => x - Mathf.Floor(x);
 

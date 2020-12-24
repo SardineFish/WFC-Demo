@@ -16,16 +16,27 @@ namespace WFC.Tilemap3D
         public Vector3Int Position { get; private set; }
         
         public int InChunkId { get; set; }
-        
-        private GameObject _prefab;
+
+        [HideInInspector] [SerializeField] private GameObjectTile _prefab;
+
+        public GameObjectTile Prefab
+        {
+            get => _prefab;
+            private set => _prefab = value;
+        }
+
+        public GameObjectTile()
+        {
+            Prefab = this;
+        }
         
         public GameObjectTile CreateInstance(Vector3Int chunkPos, Vector3Int offset, Vector3Int pos)
         {
-            if (!_prefab)
-                _prefab = gameObject;
+            if (!Prefab)
+                Prefab = this;
             
             var tile = GameObjectPool.Get<GameObjectTile>(gameObject);
-            tile._prefab = _prefab;
+            tile.Prefab = Prefab;
             tile.SetPosInternal(chunkPos, offset, pos);
 
             return tile;
@@ -35,7 +46,7 @@ namespace WFC.Tilemap3D
         {
             if (Application.isPlaying)
             {
-                GameObjectPool.Release(_prefab, gameObject);
+                GameObjectPool.Release(Prefab.gameObject, gameObject);
             }
             else
                 Undo.DestroyObjectImmediate(gameObject);

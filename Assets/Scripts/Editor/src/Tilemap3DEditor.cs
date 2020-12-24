@@ -34,9 +34,9 @@ namespace WFC.Editor
 
         private EditMode _editMode = EditMode.None;
         
-        private List<Tilemap3D.Tilemap3D> _tilemaps = new List<Tilemap3D.Tilemap3D>();
-        private Tilemap3D.Tilemap3D _palette;
-        private Tilemap3D.Tilemap3D _editingTilemap;
+        private List<Tilemap3D.GameObjectTilemap> _tilemaps = new List<Tilemap3D.GameObjectTilemap>();
+        private Tilemap3D.GameObjectTilemap _palette;
+        private Tilemap3D.GameObjectTilemap _editingGameObjectTilemap;
         private int _controlID;
         private bool _shouldReload = true;
         private GameObjectTile _selectedTile;
@@ -74,23 +74,18 @@ namespace WFC.Editor
             else
                 _palette = null;
             
-            selected = _editingTilemap ? _tilemaps.IndexOf(_editingTilemap) : -1;
+            selected = _editingGameObjectTilemap ? _tilemaps.IndexOf(_editingGameObjectTilemap) : -1;
             // var idx = EditorGUILayout.DropdownButton(new GUIContent(selected), FocusType.Keyboard,
             //     _tilemaps.Select(t => new GUIContent(t.name)).ToArray());
             selected = EditorGUILayout.Popup("Palette", selected, _tilemaps.Select(t => t.name).ToArray());
             if (selected >= 0)
-                _editingTilemap = _tilemaps[selected];
+                _editingGameObjectTilemap = _tilemaps[selected];
             else
-                _editingTilemap = null;
+                _editingGameObjectTilemap = null;
 
             if (GUILayout.Button("Refresh"))
             {
-                _tilemaps = GameObject.FindObjectsOfType<Tilemap3D.Tilemap3D>().ToList();
-                
-                foreach (var tilemap in _tilemaps)
-                {
-                    tilemap.ReloadTileFromChildren();
-                }
+                Refresh();
             }
             
             EditorGUILayout.LabelField("Selected Tile", _selectedTile ? _selectedTile.name : "<None>");
@@ -100,7 +95,8 @@ namespace WFC.Editor
         {
             SceneView.duringSceneGui += OnScene;
             AssemblyReloadEvents.afterAssemblyReload += AssemblyReload;
-            _tilemaps = GameObject.FindObjectsOfType<Tilemap3D.Tilemap3D>().ToList();
+            EditorApplication.playModeStateChanged += PlayModeChanged;
+            _tilemaps = GameObject.FindObjectsOfType<Tilemap3D.GameObjectTilemap>().ToList();
             _controlID = GUIUtility.GetControlID(FocusType.Passive);
         }
 
@@ -108,6 +104,25 @@ namespace WFC.Editor
         {
             SceneView.duringSceneGui -= OnScene;
             AssemblyReloadEvents.afterAssemblyReload -= AssemblyReload;
+            EditorApplication.playModeStateChanged -= PlayModeChanged;
+        }
+
+        void Refresh()
+        {
+            _tilemaps = GameObject.FindObjectsOfType<Tilemap3D.GameObjectTilemap>().ToList();
+
+            if (!Application.isPlaying)
+            {
+                foreach (var tilemap in _tilemaps)
+                {
+                    tilemap.ReloadTileFromChildren();
+                }
+            }
+        }
+
+        private void PlayModeChanged(PlayModeStateChange obj)
+        {
+            Refresh();
         }
 
         private void AssemblyReload()
@@ -142,10 +157,10 @@ namespace WFC.Editor
                 
                 ev.Use();
             }
-            else if (_editMode == EditMode.Paint && _editingTilemap && _selectedTile)
+            else if (_editMode == EditMode.Paint && _editingGameObjectTilemap && _selectedTile)
             {
                 var ray = HandleUtility.GUIPointToWorldRay(ev.mousePosition);
-                var tile = _editingTilemap.RayMarch(ray, 100, out _, out var normal);
+                var tile = _editingGameObjectTilemap.RayMarch(ray, 100, out _, out var normal);
                 Vector3Int pos;
                 if (tile)
                     pos = tile.Position + normal;
@@ -154,15 +169,15 @@ namespace WFC.Editor
                     pos = (ray.origin + ray.direction * (-ray.origin.y / ray.direction.y)).FloorToVector3Int();
                 }
                 
-                _editingTilemap.SetTile(pos, _selectedTile);
+                _editingGameObjectTilemap.SetTile(pos, _selectedTile);
             }
-            else if (_editMode == EditMode.Erase && _editingTilemap)
+            else if (_editMode == EditMode.Erase && _editingGameObjectTilemap)
             {
                 var ray = HandleUtility.GUIPointToWorldRay(ev.mousePosition);
-                var tile = _editingTilemap.RayMarch(ray, 100, out var hitPos, out _);
+                var tile = _editingGameObjectTilemap.RayMarch(ray, 100, out var hitPos, out _);
                 if (tile)
                 {
-                    _editingTilemap.RemoveTile(hitPos);
+                    _editingGameObjectTilemap.RemoveTile(hitPos);
                 }
             }
         }

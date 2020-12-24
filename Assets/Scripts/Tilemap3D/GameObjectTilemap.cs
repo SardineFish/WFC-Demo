@@ -6,13 +6,20 @@ using UnityEngine.Tilemaps;
 
 namespace WFC.Tilemap3D
 {
-    public class Tilemap3D : MonoBehaviour, ICustomEditorEX
+    public class GameObjectTilemap : MonoBehaviour, ICustomEditorEX
     {
         public int ChunkSize = 8;
         private readonly Dictionary<Vector3Int, TileChunk> Chunks = new Dictionary<Vector3Int, TileChunk>();
         
         [DisplayInInspector("Total tiles")]
         public int Count { get; private set; }
+
+        public BoundsInt Bounds { get; private set; }
+
+        private void Awake()
+        {
+            ReloadTileFromChildren();
+        }
 
         [EditorButton]
         public void ReloadTileFromChildren()
@@ -56,7 +63,13 @@ namespace WFC.Tilemap3D
             tile.transform.SetParent(transform, false);
             tile.transform.localPosition = pos;
             if (!chunk.SetTile(offset, tile))
+            {
                 Count++;
+                if (Count == 1)
+                    Bounds = new BoundsInt(pos, Vector3Int.one);
+                else
+                    Bounds = Bounds.Encapsulate(pos);
+            }
         }
 
         public void RemoveTile(Vector3Int pos)
@@ -142,6 +155,11 @@ namespace WFC.Tilemap3D
             var newChunk = new TileChunk(ChunkSize);
             Chunks[chunkPos] = newChunk;
             return newChunk;
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.DrawWireCube(Bounds.center, Bounds.size);
         }
     }
 }
