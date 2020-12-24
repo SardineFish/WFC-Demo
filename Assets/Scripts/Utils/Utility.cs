@@ -238,6 +238,51 @@ namespace SardineFish.Utils
             }
         }
 
+        public static IEnumerable<(Vector3Int voxelPos, Vector3Int normal)> VoxelRayMarching(Ray ray, int distance)
+        {
+            var sign = new Vector3Int(
+                MathUtility.SignInt(ray.direction.x),
+                MathUtility.SignInt(ray.direction.y),
+                MathUtility.SignInt(ray.direction.z)
+            );
+            var pos = MathUtility.SignedRound(ray.origin, sign);
+            for (var i = 0; i < distance; i++)
+            {
+                var hitPos = pos - new Vector3Int(
+                    sign.x > 0 ? 1 : 0,
+                    sign.y > 0 ? 1 : 0,
+                    sign.z > 0 ? 1 : 0
+                );
+                Vector3Int normal;
+                var t = new Vector3(
+                    ray.direction.x == 0 ? float.MaxValue : Mathf.Abs((pos.x - ray.origin.x) / ray.direction.x),
+                    ray.direction.y == 0 ? float.MaxValue : Mathf.Abs((pos.y - ray.origin.y) / ray.direction.y),
+                    ray.direction.z == 0 ? float.MaxValue : Mathf.Abs((pos.z - ray.origin.z) / ray.direction.z)
+                );
+                if (t.x <= t.y && t.x <= t.z)
+                {
+                    pos.x += sign.x;
+                    hitPos += new Vector3Int(sign.x, 0, 0);
+                    normal = new Vector3Int(-sign.x, 0, 0);
+                }
+                else if (t.y <= t.x & t.y <= t.z)
+                {
+                    pos.y += sign.y;
+                    hitPos += new Vector3Int(0, sign.y, 0);
+                    normal = new Vector3Int(0, -sign.y, 0);
+                }
+                else
+                {
+                    pos.z += sign.z;
+                    hitPos += new Vector3Int(0, 0, sign.z);
+                    normal = new Vector3Int(0, 0, -sign.z);
+                }
+
+                
+                yield return (hitPos, normal);
+            }
+        }
+
         #endregion Generator
 
         public static void ForEach<T>(this IEnumerable<T> ts, Action<T> callback)

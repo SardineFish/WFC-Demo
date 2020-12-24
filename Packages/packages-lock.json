@@ -121,6 +121,13 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
+    "studio.gilp.internal-icon-browser": {
+      "version": "https://github.com/GilpStudio/unity-internal-icon-browser.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "6c3287b1a59b3ce54aa95ef1aeacbd3068f9e530"
+    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,

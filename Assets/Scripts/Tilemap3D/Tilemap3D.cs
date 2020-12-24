@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SardineFish.Utils;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -14,13 +15,24 @@ namespace WFC.Tilemap3D
         public int Count { get; private set; }
 
         [EditorButton]
-        void UpdateTileFromChildren()
+        public void ReloadTileFromChildren()
         {
+            Chunks.Clear();
+            Count = 0;
             var tiles = GetComponentsInChildren<GameObjectTile>();
             foreach (var tile in tiles)
             {
-                SetTileInstance(tile.transform.localPosition.FloorToVector3Int(), tile);
+                var pos = tile.transform.localPosition.FloorToVector3Int();
+                var (chunkPos, offset) = ChunkAt(pos);
+                tile.SetPosInternal(chunkPos, offset, pos);
+                SetTileInstance(pos, tile);
             }
+        }
+
+        [EditorButton]
+        void ClearAll()
+        {
+            ClearAllTiles();
         }
 
         public void SetTile(Vector3Int pos, GameObjectTile prefab)
@@ -32,7 +44,7 @@ namespace WFC.Tilemap3D
             }
 
             var (chunkPos, offset) = ChunkAt(pos);
-            var tile = prefab.CreateInstance(chunkPos, offset);
+            var tile = prefab.CreateInstance(chunkPos, offset, pos);
             SetTileInstance(pos, tile);
         }
         
@@ -43,7 +55,8 @@ namespace WFC.Tilemap3D
                         
             tile.transform.SetParent(transform, false);
             tile.transform.localPosition = pos;
-            chunk.SetTile(pos, tile);
+            if (!chunk.SetTile(offset, tile))
+                Count++;
         }
 
         public void RemoveTile(Vector3Int pos)
@@ -54,7 +67,11 @@ namespace WFC.Tilemap3D
 
             var tile = chunk.RemoveTile(offset);
             if (tile)
+            {
                 tile.DestroyInstance();
+                Count--;
+            }
+            
         }
 
         public void ClearAllTiles()
@@ -69,6 +86,7 @@ namespace WFC.Tilemap3D
                 chunk.TileList.Clear();
             }
             Chunks.Clear();
+            Count = 0;
         }
         
 
@@ -80,10 +98,42 @@ namespace WFC.Tilemap3D
             return chunk[offset];
         }
 
+        public GameObjectTile RayMarch(Ray ray, int distance)
+        {
+            return RayMarch(ray, distance, out _, out _);
+        }
+
+        public GameObjectTile RayMarch(Ray ray, int distance, out Vector3Int hitPos, out Vector3Int hitNormal)
+        {
+            foreach (var (pos, normal) in Utility.VoxelRayMarching(ray, distance))
+            {
+                var tile = GetTile(pos);
+                if (tile)
+                {
+                    hitNormal = normal;
+                    hitPos = pos;
+                    return tile;   
+                }
+            }
+
+            hitNormal = Vector3Int.zero;
+            hitPos = Vector3Int.zero;
+            return null;
+        }
+
         (Vector3Int chunkPos, Vector3Int offset) ChunkAt(Vector3Int pos)
         {
-            return (pos / ChunkSize, pos.Modulo(ChunkSize));
+            return (pos / ChunkSize, new Vector3Int(
+                FloorReminder(pos.x, ChunkSize),
+                FloorReminder(pos.y, ChunkSize),
+                FloorReminder(pos.z, ChunkSize)
+            ));
         }
+        
+        static int FloorReminder(int x, int m) =>
+            x >= 0
+                ? x % m
+                : (m + x % m) % m;
 
         TileChunk GetOrCreateChunk(Vector3Int chunkPos)
         {

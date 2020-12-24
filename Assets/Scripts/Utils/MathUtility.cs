@@ -76,6 +76,23 @@ namespace SardineFish.Utils
             return z;
         }
 
+        /// <summary>
+        /// Floor(x), for sign <= 0
+        /// Ceil(x), for sign > 0
+        /// </summary>
+        /// <param name="sign"></param>
+        /// <returns></returns>
+        public static int SignedRound(float x, int sign)
+        {
+            if (sign > 0)
+                return Mathf.CeilToInt(x);
+            else
+                return Mathf.FloorToInt(x);
+        }
+
+        public static Vector3Int SignedRound(Vector3 v, Vector3Int sign)
+            => new Vector3Int(SignedRound(v.x, sign.x), SignedRound(v.y, sign.y), SignedRound(v.z, sign.z));
+
         public static Vector2 ToVector2(this Vector3 v)
         {
             return new Vector2(v.x, v.y);
@@ -109,6 +126,9 @@ namespace SardineFish.Utils
             => new Vector3(v.x, v.y, z);
         public static Vector2 ToVector2(this Vector3Int v)
             => new Vector2(v.x, v.y);
+
+        public static Vector3 ToVector3(this Vector3Int v)
+            => v;
         public static Vector2Int ToVector2Int(this Vector3 v)
             => new Vector2Int(Mathf.FloorToInt(v.x), Mathf.FloorToInt(v.y));
 
