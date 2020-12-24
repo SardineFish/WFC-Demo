@@ -11,10 +11,33 @@ namespace WFC
     [RequireComponent(typeof(Tilemap))]
     public class TilemapPattern : MonoBehaviour, ICustomEditorEX
     {
-        private readonly Dictionary<TileBase, Pattern2D<TileBase>> _patterns =
-            new Dictionary<TileBase, Pattern2D<TileBase>>();
+        public bool IncludeCorner = false;
+        private readonly Dictionary<TileBase, Pattern<TileBase>> _patterns =
+            new Dictionary<TileBase, Pattern<TileBase>>();
 
-        public IEnumerable<Pattern2D<TileBase>> Patterns => _patterns.Values;
+        private static readonly Vector3Int[] Adjacent = new[]
+        {
+            Vector3Int.right,
+            Vector3Int.up,
+            Vector3Int.left,
+            Vector3Int.down,
+        };
+
+        private static readonly Vector3Int[] AdjacentWithCorner = new[]
+        {
+            Vector3Int.right,
+            Vector3Int.right + Vector3Int.up,
+            Vector3Int.up,
+            Vector3Int.up + Vector3Int.left,
+            Vector3Int.left,
+            Vector3Int.left + Vector3Int.down,
+            Vector3Int.down,
+            Vector3Int.down + Vector3Int.right,
+        };
+
+        public Vector3Int[] NeighborOffset => IncludeCorner ? AdjacentWithCorner : Adjacent;
+
+        public IEnumerable<Pattern<TileBase>> Patterns => _patterns.Values;
 
         private Tilemap _tilemap;
 
@@ -24,12 +47,16 @@ namespace WFC
             ExtractPatterns();
         }
 
-        Pattern2D<TileBase> GetOrCreatePattern(TileBase tile)
+        Pattern<TileBase> GetOrCreatePattern(TileBase tile)
         {
             
             if (_patterns.TryGetValue(tile, out var pattern))
                 return pattern;
-            var newPattern = new Pattern2D<TileBase>(tile);
+            Pattern<TileBase> newPattern =
+                IncludeCorner 
+                    ? new Pattern<TileBase>(tile, 8) 
+                    : new Pattern<TileBase>(tile, 4);
+            
             _patterns.Add(tile, newPattern);
             return newPattern;
         }
@@ -53,14 +80,11 @@ namespace WFC
 
                 var pattern = GetOrCreatePattern(tile);
 
-                if (_tilemap.GetTile(pos + left) is TileBase leftTile)
-                    pattern.Left.Add(GetOrCreatePattern(leftTile));
-                if (_tilemap.GetTile(pos + right) is TileBase rightTile)
-                    pattern.Right.Add(GetOrCreatePattern(rightTile));
-                if (_tilemap.GetTile(pos + up) is TileBase upTile)
-                    pattern.Up.Add(GetOrCreatePattern(upTile));
-                if (_tilemap.GetTile(pos + down) is TileBase downTile)
-                    pattern.Down.Add(GetOrCreatePattern(downTile));
+                for (var idx = 0; idx < NeighborOffset.Length; idx++)
+                {
+                    if (_tilemap.GetTile(pos + NeighborOffset[idx]) is TileBase adjacentTile)
+                        pattern.Neighbors[idx].Add(GetOrCreatePattern(adjacentTile));
+                }
             }
             
             

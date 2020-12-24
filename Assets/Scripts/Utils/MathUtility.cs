@@ -185,6 +185,9 @@ namespace SardineFish.Utils
         public static bool Contains(this Vector2Int size, Vector2Int pos)
             => pos.x >= 0 && pos.x < size.x && pos.y >= 0 && pos.y < size.y;
 
+        public static bool Contains(this Vector3Int size, Vector3Int pos)
+            => pos.x >= 0 && pos.x < size.x && pos.y >= 0 && pos.y < size.y && pos.z >= 0 && pos.z < size.z; 
+
         public static Rect Shrink(this Rect rect, float width)
         {
             var newRect = rect;

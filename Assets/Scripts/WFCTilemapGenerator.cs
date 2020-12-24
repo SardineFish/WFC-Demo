@@ -16,7 +16,7 @@ namespace WFC
         public BoundsInt Bounds;
         public bool ShowSuperposition = false;
         private Tilemap _tilemap;
-        private WFCGenerator2D<TileBase> _generator;
+        private WFCGenerator<TileBase> _generator;
         private List<Tilemap> _stateMaps = new List<Tilemap>();
 
         private CoroutineRunner CoroutineRunner;
@@ -32,8 +32,10 @@ namespace WFC
             if (!TilemapPattern)
                 return;
             
-            if(_generator is null)
-                _generator = new WFCGenerator2D<TileBase>(Bounds.size.ToVector2Int(), TilemapPattern.Patterns);
+            // if(_generator is null)
+            _tilemap.ClearAllTiles();
+            TilemapPattern.ExtractPatterns();
+            _generator = new WFCGenerator<TileBase>(Bounds.size.ToVector2Int().ToVector3Int(1), TilemapPattern.NeighborOffset, TilemapPattern.Patterns);
             
             
             foreach(var tilemap in _stateMaps)
@@ -58,8 +60,6 @@ namespace WFC
 
         IEnumerator GenerateProgressive()
         {
-            _tilemap.ClearAllTiles();
-            TilemapPattern.ExtractPatterns();
             _generator.Reset(Seed);
             
 
@@ -67,8 +67,8 @@ namespace WFC
             
             foreach (var collapsedChunk in _generator.RunProgressive())
             {
-                var pos = Bounds.min + collapsedChunk.ToVector3Int();
-                var tile = _generator.ChunkStates[collapsedChunk.x, collapsedChunk.y].Pattern.Chunk;
+                var pos = Bounds.min + collapsedChunk;
+                var tile = _generator.ChunkStates[collapsedChunk.x, collapsedChunk.y, collapsedChunk.z].Pattern.Chunk;
                 _tilemap.SetTile(pos, tile);
                 
                 if(ShowSuperposition)
@@ -100,7 +100,7 @@ namespace WFC
             {
                 var p = Bounds.min + new Vector3Int(x, y, 0);
                 var idx = 0;
-                foreach (var pattern in _generator.ChunkStates[x, y].Compatibles)
+                foreach (var pattern in _generator.ChunkStates[x, y, 0].Compatibles)
                 {
                     _stateMaps[idx++].SetTile(p, pattern.Chunk);
                 }       
