@@ -16,15 +16,11 @@ namespace WFC
 
         public IEnumerable<Pattern2D<TileBase>> Patterns => _patterns.Values;
 
-        private Lazy<Tilemap> _tilemap;
+        private Tilemap _tilemap;
 
-        public TilemapPattern()
-        {
-            _tilemap = new Lazy<Tilemap>(GetComponent<Tilemap>);
-        }
-        
         private void Awake()
         {
+            _tilemap = GetComponent<Tilemap>();
             ExtractPatterns();
         }
 
@@ -43,7 +39,7 @@ namespace WFC
         public void ExtractPatterns()
         {
             _patterns.Clear();
-            var bounds = _tilemap.Value.cellBounds;
+            var bounds = _tilemap.cellBounds;
             var up = Vector2Int.up.ToVector3Int();
             var left = Vector2Int.left.ToVector3Int();
             var right = Vector2Int.right.ToVector3Int();
@@ -51,19 +47,19 @@ namespace WFC
             
             foreach (var pos in bounds.Iter())
             {
-                var tile = _tilemap.Value.GetTile(pos);
+                var tile = _tilemap.GetTile(pos);
                 if (!tile)
                     continue;
 
                 var pattern = GetOrCreatePattern(tile);
 
-                if (_tilemap.Value.GetTile(pos + left) is TileBase leftTile)
+                if (_tilemap.GetTile(pos + left) is TileBase leftTile)
                     pattern.Left.Add(GetOrCreatePattern(leftTile));
-                if (_tilemap.Value.GetTile(pos + right) is TileBase rightTile)
+                if (_tilemap.GetTile(pos + right) is TileBase rightTile)
                     pattern.Right.Add(GetOrCreatePattern(rightTile));
-                if (_tilemap.Value.GetTile(pos + up) is TileBase upTile)
+                if (_tilemap.GetTile(pos + up) is TileBase upTile)
                     pattern.Up.Add(GetOrCreatePattern(upTile));
-                if (_tilemap.Value.GetTile(pos + down) is TileBase downTile)
+                if (_tilemap.GetTile(pos + down) is TileBase downTile)
                     pattern.Down.Add(GetOrCreatePattern(downTile));
             }
             
