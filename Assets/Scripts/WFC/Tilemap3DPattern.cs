@@ -10,13 +10,30 @@ namespace WFC
     [RequireComponent(typeof(Tilemap3D.GameObjectTilemap))]
     public class Tilemap3DPattern : MonoBehaviour, ICustomEditorEX
     {
-        public GameObjectTile EmptyTile;
+        public bool IncludeEmptyTile = true;
+        public GameObjectTile BoundaryTile;
         private GameObjectTilemap _tilemap;
 
         private readonly Dictionary<GameObjectTile, Pattern<GameObjectTile>> _patterns =
             new Dictionary<GameObjectTile, Pattern<GameObjectTile>>();
 
         public List<Pattern<GameObjectTile>> Patterns { get; } = new List<Pattern<GameObjectTile>>();
+
+        private Pattern<GameObjectTile> _boundaryPattern;
+
+        public Pattern<GameObjectTile> BoundaryPattern
+        {
+            get
+            {
+                if (_boundaryPattern.NotNull())
+                    return _boundaryPattern;
+                if (!BoundaryTile)
+                    return null;
+                _boundaryPattern = new Pattern<GameObjectTile>(BoundaryTile, NeighborOffset.Length);
+                return _boundaryPattern;
+            }
+            
+        }
 
         [DisplayInInspector()]
         private int PatternCount => _patterns.Count;
@@ -55,9 +72,13 @@ namespace WFC
         {
             if (_patterns.TryGetValue(tile.Prefab, out var pattern))
                 return pattern;
-            var newPattern = tile.Prefab == EmptyTile
-                ? new Pattern<GameObjectTile>(null, NeighborOffset.Length)
-                : new Pattern<GameObjectTile>(tile.Prefab, NeighborOffset.Length);
+            if (tile.Prefab == BoundaryTile)
+                return BoundaryPattern;
+            var weight = 1f;
+            if (tile.Prefab.GetComponent<TileWeight>() is TileWeight tileWeight && tileWeight)
+                weight = tileWeight.Weight;
+            
+            var newPattern = new Pattern<GameObjectTile>(tile.Prefab, NeighborOffset.Length, weight);
             _patterns.Add(tile.Prefab, newPattern);
             return newPattern;
         }
@@ -82,7 +103,15 @@ namespace WFC
                     var neighborPos = pos + NeighborOffset[idx];
                     var neighborTile = _tilemap.GetTile(neighborPos);
                     if (!neighborTile)
+                    {
+                        if (IncludeEmptyTile)
+                        {
+                            var emptyPattern = GetOrCreateEmptyPattern();
+                            pattern.Neighbors[idx].Add(emptyPattern);
+                            emptyPattern.Neighbors[NeighborOffset.IndexOf(-NeighborOffset[idx])].Add(pattern);
+                        }
                         continue;
+                    }
                     var neighborPattern = GetOrCreatePattern(neighborTile);
                     pattern.Neighbors[idx].Add(neighborPattern);
                 }
@@ -90,6 +119,8 @@ namespace WFC
             
             foreach(var pattern in _patterns.Values)
                 Patterns.Add(pattern);
+            if (IncludeEmptyTile)
+                Patterns.Add(GetOrCreateEmptyPattern());
         }
     }
 }

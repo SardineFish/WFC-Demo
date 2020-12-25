@@ -136,7 +136,12 @@ namespace WFC.Tilemap3D
 
         (Vector3Int chunkPos, Vector3Int offset) ChunkAt(Vector3Int pos)
         {
-            return (pos / ChunkSize, new Vector3Int(
+            var floorOffset = new Vector3Int(
+                pos.x < 0 ? 1 : 0,
+                pos.y < 0 ? 1 : 0,
+                pos.z < 0 ? 1 : 0
+            );
+            return (pos / ChunkSize - floorOffset, new Vector3Int(
                 FloorReminder(pos.x, ChunkSize),
                 FloorReminder(pos.y, ChunkSize),
                 FloorReminder(pos.z, ChunkSize)

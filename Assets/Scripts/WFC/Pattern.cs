@@ -32,17 +32,18 @@ namespace WFC
         //
         // public HashSet<Pattern<T>> Down => Neighbors[(int) Orientation2D.Down];
 
-        public Pattern(T chunkData, int adjacentCount)
+        public Pattern(T chunkData, int adjacentCount, float weight = 1)
         {
             Chunk = chunkData;
             Neighbors = new HashSet<Pattern<T>>[adjacentCount];
+            Weight = weight;
             for (var i = 0; i < adjacentCount; i++)
             {
                 Neighbors[i] = new HashSet<Pattern<T>>();
             }
         }
 
-        public float Weight => 1;
+        public float Weight { get; }
         public IEnumerable<Pattern<T>> GetAdjacent(int i) => Neighbors[i];
     }
 }

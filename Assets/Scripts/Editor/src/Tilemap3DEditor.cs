@@ -5,6 +5,7 @@ using SardineFish.Utils;
 using SardineFish.Utils.Editor;
 using UnityEditor;
 using UnityEngine;
+using WFC.Test;
 using WFC.Tilemap3D;
 
 namespace WFC.Editor
@@ -160,14 +161,23 @@ namespace WFC.Editor
             else if (_editMode == EditMode.Paint && _editingGameObjectTilemap && _selectedTile)
             {
                 var ray = HandleUtility.GUIPointToWorldRay(ev.mousePosition);
-                var tile = _editingGameObjectTilemap.RayMarch(ray, 100, out _, out var normal);
+                var tile = _editingGameObjectTilemap.RayMarch(ray, 100, out var hitPos, out var normal);
                 Vector3Int pos;
                 if (tile)
-                    pos = tile.Position + normal;
+                    pos = hitPos + normal;
                 else
                 {
                     pos = (ray.origin + ray.direction * (-ray.origin.y / ray.direction.y)).FloorToVector3Int();
                 }
+                // var tobj = new GameObject();
+                // var test = tobj.AddComponent<TestRayMarching>();
+                // var objFrom = new GameObject();
+                // var objTo = new GameObject();
+                // test.From = objFrom.transform;
+                // test.To = objTo.transform;
+                // objFrom.transform.position = ray.origin;
+                // objTo.transform.position = ray.origin + ray.direction * 100;
+                // tile.gameObject.name = "Fuck";
                 
                 _editingGameObjectTilemap.SetTile(pos, _selectedTile);
             }

@@ -56,6 +56,28 @@ namespace WFC
             }
         }
 
+        public void SetBoundaryPattern(Pattern<T> boundPattern)
+        {
+            var bounds = new BoundsInt(Vector3Int.zero, Size);
+            for (var idx = 0; idx < NeighborOffset.Length; idx++)
+            {
+                var offset = NeighborOffset[idx];
+                var contraryIdx = NeighborOffset.IndexOf(-offset);
+                foreach (var pos in bounds.BoundaryIter(offset))
+                {
+                    var chunk = ChunkStates[pos.x, pos.y, pos.z];
+                    var count = chunk.Compatibles.Count;
+                    // chunk.Compatibles.RemoveWhere(p => !p.Neighbors[idx].Contains(boundPattern));
+                    chunk.UpdateCompatibleFrom(boundPattern.Neighbors[contraryIdx]);
+                    
+                    if(count != chunk.Compatibles.Count)
+                        _propagationStack.Push(pos);
+                }
+            }
+            
+            CoroutineRunner.Run(PropagateProgressive().GetEnumerator());
+        }
+
         public IEnumerable<Vector3Int> RunProgressive()
         {
             while (true)
@@ -139,33 +161,6 @@ namespace WFC
             
         }
 
-        // bool UpdateChunk(Vector2Int pos)
-        // {
-        //     var chunk = ChunkStates[pos.x, pos.y, ];
-        //     var compatibles = ObjectPool<HashSet<Pattern<T>>>.Get();
-        //     for (var dir = 0; dir < 4; dir++)
-        //     {
-        //         var delta = AdjacentDelta[dir];
-        //         var adjacentPos = pos + delta;
-        //         if (!Size.Contains(adjacentPos))
-        //             continue;
-        //         var adjacent = ChunkStates[adjacentPos.x, adjacentPos.y];
-        //         compatibles.UnionWith(adjacent.CompatibleAdjacent[(dir + 2) % 4]);
-        //     }
-        //
-        //     if (chunk.UpdateCompatibleFrom(compatibles))
-        //     {
-        //         ChunkStates[pos.x, pos.y] = chunk;
-        //         compatibles.Clear();
-        //         ObjectPool<HashSet<Pattern<T>>>.Release(compatibles);
-        //         return true;
-        //     }
-        //     
-        //     compatibles.Clear();
-        //     ObjectPool<HashSet<Pattern<T>>>.Release(compatibles);
-        //     return false;
-        //
-        // }
         
     }
 }

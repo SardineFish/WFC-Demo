@@ -238,6 +238,41 @@ namespace SardineFish.Utils
             }
         }
 
+        /// <summary>
+        /// Iterate over all positions in BoundsInt by given direction.
+        /// e.g. For (1, 0, 0) will iterate over the right surface of the bounding box.
+        /// e.g. For (1, -1, 0) will iterate over the right bottom edge of the bounding box.
+        /// e.g. For (1, 1, 1) will only yield one corner vertex.
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public static IEnumerable<Vector3Int> BoundaryIter(this BoundsInt bounds, Vector3Int direction)
+        {
+            var step = new Vector3Int(
+                direction.x == 0 ? 1 : 0,
+                direction.y == 0 ? 1 : 0,
+                direction.z == 0 ? 1 : 0
+            );
+            var startPos = new Vector3Int(
+                direction.x <= 0 ? bounds.xMin : bounds.xMax - 1,
+                direction.y <= 0 ? bounds.yMin : bounds.yMax - 1,
+                direction.z <= 0 ? bounds.zMin : bounds.zMax - 1
+            );
+            var endPos = new Vector3Int(
+                direction.x < 0 ? bounds.xMin + 1 : bounds.xMax,
+                direction.y < 0 ? bounds.yMin + 1 : bounds.yMax,
+                direction.z < 0 ? bounds.zMin + 1 : bounds.zMax
+            );
+
+            for (var x = startPos.x; x < endPos.x; x++)
+            for (var y = startPos.y; y < endPos.y; y++)
+            for (var z = startPos.z; z < endPos.z; z++)
+            {
+                yield return new Vector3Int(x, y, z);
+            }
+        }
+
         public static IEnumerable<(Vector3Int voxelPos, Vector3Int normal)> VoxelRayMarching(Ray ray, int distance)
         {
             var sign = new Vector3Int(

@@ -43,6 +43,10 @@ namespace WFC
         IEnumerator RunProgressive()
         {
             _generator.Reset(Seed);
+            if (PatternGenerator.BoundaryPattern is Pattern<GameObjectTile> boundPattern)
+            {
+                _generator.SetBoundaryPattern(boundPattern);
+            }
 
             foreach (var pos in _generator.RunProgressive())
             {
